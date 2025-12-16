@@ -110,8 +110,15 @@ jobs:
             write-verbose "ModuleFound:`n$($moduleFound|out-string)"
           }else{
             Start-Sleep -seconds 2
-            write-verbose "/home/runner/.local/share/powershell/Modules Contents:`n$(Get-ChildItem /home/runner/.local/share/powershell/Modules|Format-List|Out-String)"
-            write-verbose "/home/runner/.local/share/powershell/Modules/$modulename Contents:`n$(Get-ChildItem /home/runner/.local/share/powershell/Modules/$modulename|Format-List|Out-String)"
+            $modulePathContents = Get-ChildItem /home/runner/.local/share/powershell/Modules
+            write-verbose "/home/runner/.local/share/powershell/Modules Contents:`n$($modulePathContents|Format-List|Out-String)"
+            $moduleFolderContents = $modulePathContents.where{$_.name -ieq $moduleName}
+            if($moduleFolderContents)
+            {
+                $fName = $moduleFolderContents.fullname
+                write-verbose "$fName Contents:`n$(Get-ChildItem $fName|Format-List|Out-String)"
+            }
+            
             Start-Sleep -seconds 2
             $moduleFound = $(Get-Module -ListAvailable).where{
                 $_.Name -ieq $moduleName

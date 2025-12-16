@@ -118,7 +118,7 @@ jobs:
                 $fName = $moduleFolderContents.fullname
                 $fullFolderContents = Get-ChildItem $fName -recurse
                 write-verbose "$fName Contents:`n$($fullFolderContents|Format-List|Out-String)"
-                $modManifest = $(get-childitem -Path .\build\ -Recurse).where{$_.Name -like '*.psd1'}|Select-Object -first 1
+                $modManifest = $($fullFolderContents).where{$_.Name -like '*.psd1'}|Select-Object -first 1
                 if($modManifest){
                     write-verbose "Module Manifest found at $($modManifest.fullname)"
                 }

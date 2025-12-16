@@ -67,6 +67,15 @@ Describe 'Resolve-PsDnsName' {
         }
     }
 
+    Context 'CName behaviour' {
+        It 'returns correct object items when a CNAME is expected' {
+            # Finding a reliable public domain that returns a CNAME was harder than I thoughts
+            $result = Resolve-PsDnsName -Type 'CNAME' -Name 'www.hotmail.com'
+            $result | Should -Not -BeNullOrEmpty
+            $result.RecordType | Should -Contain 'CNAME'
+        }
+    }
+
     Context 'RecordType and NoCache Behaviour' {
         It 'returns correct object items when multiple record types are defined, nocache is set, and a DNS Server is specified' {
             $result = Resolve-PsDnsName -Name 'google.com' -Server 8.8.8.8 -recordType 'A','AAAA','CNAME','TXT','MX','SOA' -NoCache

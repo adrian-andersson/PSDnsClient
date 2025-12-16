@@ -93,7 +93,8 @@ jobs:
           write-verbose "latestRelease: $($latestRelease|format-list|out-string)"
           if($latestRelease)
           {
-            $latestRelease|install-psresource -credential $credential
+            #$latestRelease|install-psresource -credential $credential
+            install-psresource @fetchSplat
           }else{
             write-warning 'No module found'
           }

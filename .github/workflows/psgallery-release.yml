@@ -140,7 +140,7 @@ jobs:
                     if($modManifest)
                     {
                         Write-Verbose "Unable to import dynamically, try and import from the manifest"
-                        import-module $manifest.fullname
+                        import-module $modManifest.fullname
                         $moduleFound = $(Get-Module -ListAvailable).where{
                             $_.Name -ieq $moduleName
                         }

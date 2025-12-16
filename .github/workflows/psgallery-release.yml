@@ -116,7 +116,7 @@ jobs:
             if($moduleFolderContents)
             {
                 $fName = $moduleFolderContents.fullname
-                write-verbose "$fName Contents:`n$(Get-ChildItem $fName|Format-List|Out-String)"
+                write-verbose "$fName Contents:`n$(Get-ChildItem $fName -recurse|Format-List|Out-String)"
             }
             
             Start-Sleep -seconds 2

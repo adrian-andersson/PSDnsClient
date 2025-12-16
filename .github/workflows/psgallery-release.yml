@@ -112,8 +112,9 @@ jobs:
           {
             write-verbose "ModuleFound:`n$($moduleFound|out-string)"
           }else{
+            write-verbose 'Checking for, and correcting, PowerShellGet+GHPackages casing shenanegans'
             $modulePathContents = Get-ChildItem /home/runner/.local/share/powershell/Modules
-            #write-verbose "/home/runner/.local/share/powershell/Modules Contents:`n$($modulePathContents|Format-List|Out-String)"
+            write-verbose "/home/runner/.local/share/powershell/Modules Contents:`n$($modulePathContents|Format-List|Out-String)"
             $moduleFolderContents = $modulePathContents.where{$_.name -ieq $moduleName}
             if($moduleFolderContents)
             {
@@ -139,10 +140,14 @@ jobs:
                             if ($moduleFound) { break }
                             Start-Sleep -Seconds 1
                         }
+                    }else{
+                        write-verbose 'names already match'
                     }
                 }else{
                     throw 'Manifest not found, module install must have failed'
                 }
+            }else{
+                throw "Module $moduleName not found at /home/runner/.local/share/powershell/Modules. Indicating failed install"
             }
             #Final Check
             if(!$moduleFound)

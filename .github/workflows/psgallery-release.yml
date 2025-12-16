@@ -109,7 +109,17 @@ jobs:
           {
             write-verbose "ModuleFound:`n$($moduleFound|out-string)"
           }else{
-            throw 'Module failed install'
+            Start-Sleep -seconds 2
+            write-verbose "/home/runner/.local/share/powershell/Modules Contents:`n$(Get-ChildItem /home/runner/.local/share/powershell/Modules|Format-List|Out-String)"
+            Start-Sleep -seconds 2
+            $moduleFound = $(Get-Module -ListAvailable).where{
+                $_.Name -ieq $moduleName
+            }
+            #Final Check
+            if(!$moduleFound)
+            {
+                throw 'Module failed install'
+            }
           }
           write-verbose 'Push Package to PSGallery'
           $publishSplat = @{

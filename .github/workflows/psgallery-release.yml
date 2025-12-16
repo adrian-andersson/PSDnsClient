@@ -126,7 +126,7 @@ jobs:
                     write-verbose "Module Manifest found at $($modManifest.fullname)"
                     $moduleBaseFolder = Get-Item $moduleFolderContents.FullName
                     write-verbose "Compare folder and manifest basenames: folderName: $($moduleBaseFolder.Basename) vs manifestName: $($modManifest.BaseName)"
-                    if($moduleBaseFolder.Basename -ne $modManifest.BaseName)
+                    if($moduleBaseFolder.Basename -cne $modManifest.BaseName)
                     {
                         write-verbose "Attempt to rename folder to manifest basename to correct for casing"
                         try{

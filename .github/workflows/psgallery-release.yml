@@ -116,7 +116,12 @@ jobs:
             if($moduleFolderContents)
             {
                 $fName = $moduleFolderContents.fullname
-                write-verbose "$fName Contents:`n$(Get-ChildItem $fName -recurse|Format-List|Out-String)"
+                $fullFolderContents = Get-ChildItem $fName -recurse
+                write-verbose "$fName Contents:`n$($fullFolderContents|Format-List|Out-String)"
+                $modManifest = $(get-childitem -Path .\build\ -Recurse).where{$_.Name -like '*.psd1'}|Select-Object -first 1
+                if($modManifest){
+                    write-verbose "Module Manifest found at $($modManifest.fullname)"
+                }
             }
             
             Start-Sleep -seconds 2
@@ -124,12 +129,24 @@ jobs:
                 $_.Name -ieq $moduleName
             }
             if(!$moduleFound)
-            {
-                import-module $moduleName
-                start-sleep -seconds 2
-                $moduleFound = $(Get-Module -ListAvailable).where{
-                    $_.Name -ieq $moduleName
+            {   
+                try{
+                    import-module $moduleName -ErrorAction Stop
+                    start-sleep -seconds 2
+                    $moduleFound = $(Get-Module -ListAvailable).where{
+                        $_.Name -ieq $moduleName
+                    }
+                }cactch{
+                    if($modManifest)
+                    {
+                        Write-Verbose "Unable to import dynamically, try and import from the manifest"
+                        import-module $manifest.fullname
+                        $moduleFound = $(Get-Module -ListAvailable).where{
+                            $_.Name -ieq $moduleName
+                        }
+                    }
                 }
+                
             }
             #Final Check
             if(!$moduleFound)

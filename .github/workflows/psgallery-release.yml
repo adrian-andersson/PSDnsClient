@@ -111,9 +111,18 @@ jobs:
           }else{
             Start-Sleep -seconds 2
             write-verbose "/home/runner/.local/share/powershell/Modules Contents:`n$(Get-ChildItem /home/runner/.local/share/powershell/Modules|Format-List|Out-String)"
+            write-verbose "/home/runner/.local/share/powershell/Modules/$modulename Contents:`n$(Get-ChildItem /home/runner/.local/share/powershell/Modules/$modulename|Format-List|Out-String)"
             Start-Sleep -seconds 2
             $moduleFound = $(Get-Module -ListAvailable).where{
                 $_.Name -ieq $moduleName
+            }
+            if(!$moduleFound)
+            {
+                import-module $moduleName
+                start-sleep -seconds 2
+                $moduleFound = $(Get-Module -ListAvailable).where{
+                    $_.Name -ieq $moduleName
+                }
             }
             #Final Check
             if(!$moduleFound)

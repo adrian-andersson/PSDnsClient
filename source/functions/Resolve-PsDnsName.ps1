@@ -167,6 +167,11 @@ function Resolve-PsDnsName
             }
         }
 
+        if(!$Answers)
+        {
+            Throw 'PsDnsClient.Resolve-PsDnsName: No Answers from query. Check query name and try again'
+        }
+
         if(!$RawResult)
         {
             $Answers.ToArray()|Select-Object $CustomSelect -Unique

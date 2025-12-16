@@ -99,54 +99,50 @@ jobs:
             write-warning 'No module found'
           }
           #Need to handle case insensitive
+          #Need to ALSO handle the lowercase gh packages/psResource bug
+
           $allModules = $(Get-Module -ListAvailable)
           write-verbose "All Found Modules:`n$($allModules|format-table|out-string)"
           write-verbose "Checking for $moduleName installation"
           $moduleFound = $(Get-Module -ListAvailable).where{
             $_.Name -ieq $moduleName
-          }           
+          }
+
           if($moduleFound)
           {
             write-verbose "ModuleFound:`n$($moduleFound|out-string)"
           }else{
-            Start-Sleep -seconds 2
             $modulePathContents = Get-ChildItem /home/runner/.local/share/powershell/Modules
-            write-verbose "/home/runner/.local/share/powershell/Modules Contents:`n$($modulePathContents|Format-List|Out-String)"
+            #write-verbose "/home/runner/.local/share/powershell/Modules Contents:`n$($modulePathContents|Format-List|Out-String)"
             $moduleFolderContents = $modulePathContents.where{$_.name -ieq $moduleName}
             if($moduleFolderContents)
             {
                 $fName = $moduleFolderContents.fullname
                 $fullFolderContents = Get-ChildItem $fName -recurse
-                write-verbose "$fName Contents:`n$($fullFolderContents|Format-List|Out-String)"
+                #write-verbose "$fName Contents:`n$($fullFolderContents|Format-List|Out-String)"
                 $modManifest = $($fullFolderContents).where{$_.Name -like '*.psd1'}|Select-Object -first 1
                 if($modManifest){
                     write-verbose "Module Manifest found at $($modManifest.fullname)"
-                }
-            }
-            
-            Start-Sleep -seconds 2
-            $moduleFound = $(Get-Module -ListAvailable).where{
-                $_.Name -ieq $moduleName
-            }
-            if(!$moduleFound)
-            {   
-                try{
-                    import-module $moduleName -ErrorAction Stop
-                    start-sleep -seconds 2
-                    $moduleFound = $(Get-Module -ListAvailable).where{
-                        $_.Name -ieq $moduleName
-                    }
-                }catch{
-                    if($modManifest)
+                    $moduleBaseFolder = Get-Item $moduleFolderContents.FullName
+                    write-verbose "Compare folder and manifest basenames: folderName: $($moduleBaseFolder.Basename) vs manifestName: $($modManifest.BaseName)"
+                    if($moduleBaseFolder.Basename -ne $modManifest.BaseName)
                     {
-                        Write-Verbose "Unable to import dynamically, try and import from the manifest"
-                        import-module $modManifest.fullname
-                        $moduleFound = $(Get-Module -ListAvailable).where{
-                            $_.Name -ieq $moduleName
+                        write-verbose "Attempt to rename folder to manifest basename to correct for casing"
+                        try{
+                            Rename-Item -path $moduleBaseFolder.FullName -NewName $modManifest.BaseName -Force -Erroraction Stop
+                        }catch{
+                            throw 'Error renaming folder'
+                        }
+                        #Just in case the file io needs time to catch up
+                        for ($i=0; $i -lt 5; $i++) {
+                            $moduleFound = Get-Module -ListAvailable | Where-Object { $_.Name -ieq $moduleName }
+                            if ($moduleFound) { break }
+                            Start-Sleep -Seconds 1
                         }
                     }
+                }else{
+                    throw 'Manifest not found, module install must have failed'
                 }
-                
             }
             #Final Check
             if(!$moduleFound)
@@ -162,4 +158,11 @@ jobs:
             APIKey = $env:PSGalleryToken
             Path = $moduleFound.moduleBase
           }
-          publish-psResource @publishSplat
+          if(-not (Test-Path $publishSplat.Path))
+          {
+            throw "Publish Reference Path does not exist: $($moduleFound.moduleBase) "
+          }else{
+            write-verbose "Publishing $moduleName version $semver to PSGallery from $($publishSplat.Path)"
+            publish-psResource @publishSplat
+          }
+          

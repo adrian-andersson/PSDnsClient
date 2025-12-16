@@ -136,7 +136,7 @@ jobs:
                     $moduleFound = $(Get-Module -ListAvailable).where{
                         $_.Name -ieq $moduleName
                     }
-                }cactch{
+                }catch{
                     if($modManifest)
                     {
                         Write-Verbose "Unable to import dynamically, try and import from the manifest"

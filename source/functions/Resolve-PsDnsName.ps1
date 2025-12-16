@@ -101,7 +101,7 @@ function Resolve-PsDnsName
         #DNS Resolver to use.
         [Parameter()]
         [Alias('Server')]
-        [String]$DnsServer = '1.1.1.1',
+        [String]$DnsServer,
         #Switch to bypass any local cache
         [switch]$NoCache,
         #Switch to return the raw records and not the clean looking summary version

@@ -28,11 +28,11 @@ function Import-DnsClientDll
     }
     
     process{
-        $Check = [AppDomain]::CurrentDomain.GetAssemblies().where{$_.ManifestModule.name -eq 'dnslookup.dll'}
+        $Check = [AppDomain]::CurrentDomain.GetAssemblies().where{$_.Location -like '*DnsClient.dll'}
         if (!$Check)
         {
-            Write-Warning 'PsDnsClient.Import-DnsClientDll: Not Loaded. Need to import'
-            if ($MyInvocation.MyCommand.Path -like "*.psm1") {
+            Write-Verbose 'PsDnsClient.Import-DnsClientDll: Not Loaded. Need to import'
+            if ($MyInvocation.MyCommand.ModuleName -like "*PsDnsClient*") {
                 Write-Verbose 'PsDnsClient.Import-DnsClientDll: Running Inside Module'
                 #In this scenario, we need to load from the module directory
                 $ModulePath = $MyInvocation.MyCommand.Module.ModuleBase

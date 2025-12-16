@@ -54,10 +54,9 @@ Describe 'Resolve-PsDnsName' {
             $params.ValidValues | Should -Contain 'TXT'
         }
     }
-}
 
 
-Context 'Default behaviour' {
+    Context 'Default behaviour' {
         It 'returns correct object items when -RawResult is used' {
             # Mock DNS client result
             $result = Resolve-PsDnsName -Name 'google.com'
@@ -65,10 +64,25 @@ Context 'Default behaviour' {
             $result[0].DomainName | Should -Not -BeNullOrEmpty
             $result[0].RecordType | Should -Not -BeNullOrEmpty
             $result[0].Data | Should -Not -BeNullOrEmpty
+        }
     }
-}
 
-Context 'Switch behaviour' {
+    Context 'RecordType and NoCache Behaviour' {
+        It 'returns correct object items when -RawResult is used' {
+            $result = Resolve-PsDnsName -Name 'google.com' -Server 8.8.8.8 -recordType 'A','AAAA','CNAME','TXT','MX','SOA' -NoCache
+            $result | Should -Not -BeNullOrEmpty
+            $result[0].DomainName | Should -Not -BeNullOrEmpty
+            $result[0].RecordType | Should -Not -BeNullOrEmpty
+            $result[0].Data | Should -Not -BeNullOrEmpty
+            $result.RecordType | Should -Contain 'A'
+            $result.RecordType | Should -Contain 'AAAA'
+            $result.RecordType | Should -Contain 'TXT'
+            $result.RecordType | Should -Contain 'MX'
+            $result.RecordType | Should -Contain 'SOA'
+        }
+    }
+
+    Context 'Switch behaviour' {
         It 'returns correct object items when -RawResult is used' {
             # Mock DNS client result
             $result = Resolve-PsDnsName -Name 'google.com' -RawResult
@@ -77,6 +91,7 @@ Context 'Switch behaviour' {
             $result[0].Address | Should -Not -BeNullOrEmpty
             $result[0].RecordType | Should -Not -BeNullOrEmpty
             $result[0].RecordClass | Should -Not -BeNullOrEmpty
+        }
     }
 
     Context 'Error handling' {

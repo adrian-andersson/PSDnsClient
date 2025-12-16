@@ -151,6 +151,8 @@ jobs:
             #Final Check
             if(!$moduleFound)
             {
+                $allModules = $(Get-Module -ListAvailable)
+                write-verbose "All Found Modules:`n$($allModules|format-table|out-string)"
                 throw 'Module failed install'
             }
           }

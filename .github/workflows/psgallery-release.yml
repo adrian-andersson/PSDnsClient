@@ -19,7 +19,7 @@ jobs:
       - name: Get latest release details
         id: get_release
         env:
-          GH_TOKEN: $
+          GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
           $verbosePreference = 'Continue'
@@ -63,10 +63,10 @@ jobs:
         shell: pwsh
         id: moduleInstall
         env:
-          GH_TOKEN: $
-          PSGalleryToken: $
-          isPreRelease: $
-          tagName: $
+          GH_TOKEN: ${{ github.token }}
+          PSGalleryToken: ${{ secrets.PSGALLERY }}
+          isPreRelease: ${{ steps.get_release.outputs.release_isPreRelease }}
+          tagName: ${{ steps.get_release.outputs.tag_name }}
         if: success()  
         run: |
           $VerbosePreference = 'Continue'
@@ -97,7 +97,13 @@ jobs:
           }else{
             write-warning 'No module found'
           }
-          $moduleFound = get-module $moduleName -listAvailable
+          #Need to handle case insensitive
+          $allModules = $(Get-Module -ListAvailable)
+          write-verbose "All Found Modules:`n$($allModules|format-table|out-string)"
+          write-verbose "Checking for $moduleName installation"
+          $moduleFound = $(Get-Module -ListAvailable).where{
+            $_.Name -ieq $moduleName
+          }           
           if($moduleFound)
           {
             write-verbose "ModuleFound:`n$($moduleFound|out-string)"
